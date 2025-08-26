@@ -1,0 +1,70 @@
+{
+  "name": "VintagePack Demo Collection",
+  "description": "Un modpack d'exemple montrant différents types de mods pour Vintage Story",
+  "version": "1.0.0",
+  "gameVersion": "1.21.0",
+  "author": "VintagePack Manager",
+  "created": "2024-12-26T12:00:00Z",
+  "mods": [
+    {
+      "modid": 1234,
+      "modidstr": "medievalexpansion",
+      "name": "Medieval Expansion",
+      "version": "2.1.3",
+      "downloadUrl": "https://mods.vintagestory.at/download/medievalexpansion-2.1.3.zip",
+      "filename": "medievalexpansion-2.1.3.zip",
+      "side": "both",
+      "dependencies": []
+    },
+    {
+      "modid": 2345,
+      "modidstr": "advancedagri",
+      "name": "Advanced Agriculture",
+      "version": "1.8.5",
+      "downloadUrl": "https://mods.vintagestory.at/download/advancedagri-1.8.5.zip",
+      "filename": "advancedagri-1.8.5.zip",
+      "side": "both",
+      "dependencies": []
+    },
+    {
+      "modid": 4567,
+      "modidstr": "industrial",
+      "name": "Industrial Revolution",
+      "version": "3.2.1",
+      "downloadUrl": "https://mods.vintagestory.at/download/industrial-3.2.1.zip",
+      "filename": "industrial-3.2.1.zip",
+      "side": "both",
+      "dependencies": ["primitivesurvival"]
+    },
+    {
+      "modid": 5678,
+      "modidstr": "decorativeplus",
+      "name": "Decorative Plus",
+      "version": "4.1.0",
+      "downloadUrl": "https://mods.vintagestory.at/download/decorativeplus-4.1.0.zip",
+      "filename": "decorativeplus-4.1.0.zip",
+      "side": "both",
+      "dependencies": []
+    },
+    {
+      "modid": 6789,
+      "modidstr": "survivalexpanded",
+      "name": "Survival Expanded",
+      "version": "2.5.2",
+      "downloadUrl": "https://mods.vintagestory.at/download/survivalexpanded-2.5.2.zip",
+      "filename": "survivalexpanded-2.5.2.zip",
+      "side": "both",
+      "dependencies": ["configlib"]
+    },
+    {
+      "modid": 7890,
+      "modidstr": "alchemyextended",
+      "name": "Alchemy Extended",
+      "version": "1.6.4",
+      "downloadUrl": "https://mods.vintagestory.at/download/alchemyextended-1.6.4.zip",
+      "filename": "alchemyextended-1.6.4.zip",
+      "side": "both",
+      "dependencies": ["medievalexpansion"]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Modern web interface for managing Vintage Story modpacks with dependency resolution and batch installation" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="./vite.svg" />
+    
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://mods.vintagestory.at" />
+    
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#f59e0b" />
+    
+    <!-- Open Graph metadata -->
+    <meta property="og:title" content="VintagePack - Vintage Story Modpack Manager" />
+    <meta property="og:description" content="Create, manage, and share Vintage Story modpacks with modern web interface" />
+    <meta property="og:type" content="website" />
+    
+    <!-- Title -->
+    <title>VintagePack - Vintage Story Modpack Manager</title>
+    
+    <!-- Critical CSS will be inlined by Vite -->
+    <style>
+      /* Loading screen styles to prevent flash of unstyled content */
+      #root {
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      
+      .loading-screen {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+      }
+      
+      .loading-spinner {
+        animation: spin 1s linear infinite;
+        width: 2rem;
+        height: 2rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 2px solid white;
+        margin-right: 1rem;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      /* Hide loading screen when React loads */
+      .loaded .loading-screen {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Loading screen shown until React takes over -->
+      <div class="loading-screen">
+        <div class="loading-spinner"></div>
+        <div>
+          <h1 style="margin: 0; font-size: 1.5rem; font-weight: 600;">VintagePack</h1>
+          <p style="margin: 0.5rem 0 0; opacity: 0.9;">Loading modpack manager...</p>
+        </div>
+      </div>
+    </div>
+    
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Service Worker would be registered here in production -->
+  </body>
+</html>

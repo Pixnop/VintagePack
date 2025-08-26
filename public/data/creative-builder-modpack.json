@@ -1,0 +1,50 @@
+{
+  "name": "Creative Builder Collection",
+  "description": "Parfait pour les constructeurs créatifs avec des tonnes de blocs décoratifs et d'outils",
+  "version": "2.0.1",
+  "gameVersion": "1.21.0",
+  "author": "ArchitectPro",
+  "created": "2024-12-18T10:45:00Z",
+  "mods": [
+    {
+      "modid": 5678,
+      "modidstr": "decorativeplus",
+      "name": "Decorative Plus",
+      "version": "4.1.0",
+      "downloadUrl": "https://mods.vintagestory.at/download/decorativeplus-4.1.0.zip",
+      "filename": "decorativeplus-4.1.0.zip",
+      "side": "both",
+      "dependencies": []
+    },
+    {
+      "modid": 1234,
+      "modidstr": "medievalexpansion",
+      "name": "Medieval Expansion",
+      "version": "2.1.3",
+      "downloadUrl": "https://mods.vintagestory.at/download/medievalexpansion-2.1.3.zip",
+      "filename": "medievalexpansion-2.1.3.zip",
+      "side": "both",
+      "dependencies": []
+    },
+    {
+      "modid": 1357,
+      "modidstr": "furnitureexpansion",
+      "name": "Furniture Expansion",
+      "version": "3.0.5",
+      "downloadUrl": "https://mods.vintagestory.at/download/furnitureexpansion-3.0.5.zip",
+      "filename": "furnitureexpansion-3.0.5.zip",
+      "side": "both",
+      "dependencies": ["decorativeplus"]
+    },
+    {
+      "modid": 2468,
+      "modidstr": "architecturalwonders",
+      "name": "Architectural Wonders",
+      "version": "1.9.2",
+      "downloadUrl": "https://mods.vintagestory.at/download/architecturalwonders-1.9.2.zip",
+      "filename": "architecturalwonders-1.9.2.zip",
+      "side": "both",
+      "dependencies": []
+    }
+  ]
+}

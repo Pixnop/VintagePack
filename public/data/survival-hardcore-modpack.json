@@ -1,0 +1,40 @@
+{
+  "name": "Hardcore Survival Pack",
+  "description": "Pour les joueurs qui veulent un défi de survie extrême avec des mécaniques réalistes",
+  "version": "1.2.0",
+  "gameVersion": "1.21.0",
+  "author": "SurvivalMaster",
+  "created": "2024-12-20T15:30:00Z",
+  "mods": [
+    {
+      "modid": 6789,
+      "modidstr": "survivalexpanded",
+      "name": "Survival Expanded",
+      "version": "2.5.2",
+      "downloadUrl": "https://mods.vintagestory.at/download/survivalexpanded-2.5.2.zip",
+      "filename": "survivalexpanded-2.5.2.zip",
+      "side": "both",
+      "dependencies": ["configlib"]
+    },
+    {
+      "modid": 8901,
+      "modidstr": "weathersystems",
+      "name": "Weather Systems",
+      "version": "1.4.3",
+      "downloadUrl": "https://mods.vintagestory.at/download/weathersystems-1.4.3.zip",
+      "filename": "weathersystems-1.4.3.zip",
+      "side": "both",
+      "dependencies": []
+    },
+    {
+      "modid": 9012,
+      "modidstr": "wildlifeexpansion",
+      "name": "Wildlife Expansion",
+      "version": "2.1.1",
+      "downloadUrl": "https://mods.vintagestory.at/download/wildlifeexpansion-2.1.1.zip",
+      "filename": "wildlifeexpansion-2.1.1.zip",
+      "side": "both",
+      "dependencies": ["survivalexpanded"]
+    }
+  ]
+}

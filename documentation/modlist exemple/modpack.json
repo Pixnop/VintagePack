@@ -1,0 +1,30 @@
+{
+  "name": "VintagePack Export",
+  "description": "Exported from VintagePack",
+  "version": "1.0.0",
+  "gameVersion": "1.21.0",
+  "author": "VintagePack User",
+  "created": "2025-08-26T14:39:32.960Z",
+  "mods": [
+    {
+      "modid": 4647,
+      "modidstr": "quiversandsheaths",
+      "name": "Quivers And Sheaths",
+      "version": "0.3.2",
+      "downloadUrl": "https://moddbcdn.vintagestory.at/quiversandsheaths_0._7d516531f0c0ed0e7a28b8ee3c359a9c.zip?dl=quiversandsheaths_0.3.2.zip",
+      "filename": "quiversandsheaths_0.3.2.zip",
+      "side": "both",
+      "dependencies": []
+    },
+    {
+      "modid": 3805,
+      "modidstr": "overhaullib",
+      "name": "Overhaul lib",
+      "version": "1.1.0",
+      "downloadUrl": "https://moddbcdn.vintagestory.at/overhaullib_1.1.0_42c8594f0df48142730d854a3de7f596.zip?dl=overhaullib_1.1.0.zip",
+      "filename": "overhaullib_1.1.0.zip",
+      "side": "both",
+      "dependencies": []
+    }
+  ]
+}
