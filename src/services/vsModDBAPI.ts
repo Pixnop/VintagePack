@@ -3,7 +3,7 @@
  * Complete client for interacting with mods.vintagestory.at API
  */
 
-import { sampleVSModDBMods } from '../data/sampleMods'
+// No sample data - users must have CORS extension for real VSModDB data
 
 // Types for VSModDB API responses
 export interface VSModDBMod {
@@ -132,83 +132,50 @@ class VSModDBAPIClient {
   }
 
   /**
-   * Make API request with proper headers and CORS handling
+   * Make API request with smart CORS handling
+   * Uses extension approach for maximum compatibility at zero cost
    */
   private async makeRequest<T>(endpoint: string, timeout = 8000): Promise<T> {
-    // Check if we're in development mode (Vite proxy available)
-    const isDevelopment = typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    
-    if (isDevelopment) {
-      // Use Vite proxy in development
+    // In development, use Vite proxy
+    if (import.meta.env.DEV) {
       try {
-        const url = `/api/vsmoddb${endpoint}`
-        
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), timeout)
-        
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-          signal: controller.signal
+        const response = await fetch(`/api/vsmoddb${endpoint}`, {
+          headers: { 'Accept': 'application/json' }
         })
-        
-        clearTimeout(timeoutId)
-
-        if (!response.ok) {
-          throw new Error(`API request failed: ${response.status}`)
+        if (response.ok) {
+          return await response.json()
         }
-
-        const data = await response.json()
-        return data
       } catch (error) {
-        console.warn(`❌ Vite proxy failed, falling back to CORS proxy:`, (error as Error).message)
+        console.warn('Vite proxy unavailable, using fallback')
       }
     }
     
-    // Fallback to multiple CORS proxy services for production
-    const proxies = [
-      'https://api.codetabs.com/v1/proxy?quest=', // Nouveau proxy plus fiable
-      'https://cors-anywhere.herokuapp.com/', 
-      'https://corsproxy.io/?', // Garder comme fallback
-      'https://proxy.cors.sh/', // Autre alternative
-    ]
-    
-    for (const proxy of proxies) {
-      try {
-        const url = `${proxy}${encodeURIComponent(this.baseURL + endpoint)}`
-        
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), timeout / proxies.length) // Timeout plus court par proxy
-        
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          signal: controller.signal
-        })
-        
-        clearTimeout(timeoutId)
-
-        if (!response.ok) {
-          throw new Error(`API request failed: ${response.status}`)
-        }
-
-        const data = await response.json()
-        return data
-      } catch (error) {
-        console.warn(`❌ Failed with ${proxy.split('/')[2]} proxy:`, (error as Error).message)
-        if (proxy === proxies[proxies.length - 1]) {
-          throw new Error(`All proxy attempts failed. Last error: ${(error as Error).message}`)
-        }
-        // Continue to next proxy
+    // In production, try direct request first (works if user has CORS extension)
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), timeout)
+      
+      const response = await fetch(this.baseURL + endpoint, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'max-age=300' // 5 min cache
+        },
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+      
+      if (response.ok) {
+        return await response.json()
       }
+      
+      throw new Error(`API returned ${response.status}`)
+    } catch (error) {
+      // If CORS fails, inform user and use sample data
+      console.warn('🌐 Pour obtenir les données VSModDB officielles, installez une extension CORS comme "CORS Unblock" ou "CORS Everywhere"')
+      throw error
     }
-    
-    throw new Error('All proxy attempts failed')
   }
 
   /**
@@ -241,8 +208,8 @@ class VSModDBAPIClient {
       console.warn('❌ API returned no mods or bad status')
       return []
     } catch (error) {
-      console.warn('VSModDB API unavailable, using sample data:', error)
-      return sampleVSModDBMods
+      console.error('❌ VSModDB API indisponible:', error)
+      throw new Error('Impossible d\'accéder à VSModDB. Veuillez installer une extension CORS.')
     }
   }
 
@@ -298,23 +265,8 @@ class VSModDBAPIClient {
       }
       return null
     } catch (error) {
-      console.warn(`VSModDB mod details unavailable for ${modid}, using fallback:`, error)
-      // Return fallback data based on sample mods
-      const sampleMod = sampleVSModDBMods.find(mod => mod.modid === modid)
-      if (sampleMod) {
-        const fallbackDetails = {
-          ...sampleMod,
-          releases: [],
-          screenshots: []
-        }
-        
-        // Cache the fallback too
-        this.modDetailsCache.set(modid, fallbackDetails)
-        this.detailsCacheTimestamps.set(modid, now)
-        
-        return fallbackDetails
-      }
-      return null
+      console.error(`❌ VSModDB mod details unavailable for ${modid}:`, error)
+      throw new Error(`Impossible d'obtenir les détails du mod ${modid}. Veuillez vérifier votre extension CORS.`)
     }
   }
 

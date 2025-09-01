@@ -43,6 +43,7 @@ interface ModStore {
   getConflicts: () => Array<{ mod1: string, mod2: string, reason: string }>
   addModToCurrentModpack: (mod: ModData) => void
   removeModFromCurrentModpack: (modId: string) => void
+  clearError: () => void
 }
 
 const useModStore = create<ModStore>()(devtools(persist(
@@ -420,6 +421,10 @@ const useModStore = create<ModStore>()(devtools(persist(
           mp.id === updatedModpack.id ? updatedModpack : mp
         )
       })
+    },
+
+    clearError: () => {
+      set({ error: null })
     }
   }),
   {

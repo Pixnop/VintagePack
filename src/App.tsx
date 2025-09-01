@@ -14,6 +14,7 @@ import ModList from './components/mod/ModList'
 import ModBrowser from './components/vsmoddb/ModBrowser'
 import CommandPalette from './components/ui/CommandPalette'
 import FloatingActionButton from './components/ui/FloatingActionButton'
+import CorsRequiredPage from './components/ui/CorsRequiredPage'
 import { ToastContainer } from './components/ui/Toast'
 import useModStore from './store/modStore'
 import { useTheme } from './hooks/useTheme'
@@ -25,7 +26,8 @@ function App() {
     isLoading, 
     error: storeError, 
     mods,
-    currentModpack
+    currentModpack,
+    clearError
   } = useModStore()
   
   const { resolvedTheme } = useTheme()
@@ -87,6 +89,28 @@ function App() {
   ]
 
   if (storeError) {
+    // Show CORS required page for CORS-related errors
+    if (storeError.includes('CORS') || storeError.includes('VSModDB')) {
+      return (
+        <motion.div 
+          style={{ 
+            background: resolvedTheme === 'dark' 
+              ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
+              : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <CorsRequiredPage onRetry={() => {
+            clearError()
+            window.location.reload()
+          }} />
+        </motion.div>
+      )
+    }
+
+    // Show generic error for other errors
     return (
       <motion.div 
         className="min-h-screen flex items-center justify-center"
@@ -128,7 +152,10 @@ function App() {
             {storeError}
           </p>
           <motion.button
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              clearError()
+              window.location.reload()
+            }}
             className="btn-primary w-full"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
