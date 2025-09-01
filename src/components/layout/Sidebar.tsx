@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { FunnelIcon, Squares2X2Icon, ListBulletIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { FunnelIcon, Squares2X2Icon, ListBulletIcon, PlusIcon, XMarkIcon, ExclamationTriangleIcon, ShieldExclamationIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import useModStore from '../../store/modStore'
 
 interface SidebarProps {
@@ -15,6 +15,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
     currentModpack,
     loadModpack,
     createModpack,
+    removeModFromCurrentModpack,
     mods
   } = useModStore()
 
@@ -41,7 +42,7 @@ export default function Sidebar({ className = '' }: SidebarProps) {
   return (
     <aside className={`glass-secondary overflow-y-auto scrollbar-glass h-full ${className}`}>
       <div className="p-6 space-y-6">
-        {/* Filters Section */}
+        {/* Quick Stats */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -49,119 +50,51 @@ export default function Sidebar({ className = '' }: SidebarProps) {
         >
           <div className="flex items-center space-x-3 mb-4">
             <motion.div
-              whileHover={{ rotate: 180 }}
+              whileHover={{ rotate: 15 }}
               transition={{ duration: 0.3 }}
             >
               <FunnelIcon className="w-5 h-5 text-amber-500" />
             </motion.div>
-            <h2 className="text-lg font-bold text-primary">Filtres</h2>
+            <h2 className="text-lg font-bold text-primary">Statistiques</h2>
           </div>
           
-          {/* Side Filter */}
-          <motion.div 
-            className="mb-6"
-            whileHover={{ x: 2 }}
-            transition={{ duration: 0.2 }}
-          >
-            <label className="block text-sm font-semibold text-secondary mb-2">
-              Côté
-            </label>
-            <select
-              value={filters.sides.length > 0 ? filters.sides[0] : 'all'}
-              onChange={(e) => {
-                const value = e.target.value
-                setFilters({ sides: value === 'all' ? [] : [value] })
-              }}
-              className="input-glass w-full text-sm"
-            >
-              <option value="all">Tous</option>
-              <option value="Client">Client</option>
-              <option value="Server">Serveur</option>
-              <option value="Both">Les deux</option>
-            </select>
-          </motion.div>
-
-          {/* Status Filter */}
-          <motion.div 
-            className="mb-6"
-            whileHover={{ x: 2 }}
-            transition={{ duration: 0.2 }}
-          >
-            <label className="block text-sm font-semibold text-secondary mb-2">
-              Statut
-            </label>
-            <select
-              value={filters.status.length > 0 ? filters.status[0] : 'all'}
-              onChange={(e) => {
-                const value = e.target.value
-                setFilters({ status: value === 'all' ? [] : [value] })
-              }}
-              className="input-glass w-full text-sm"
-            >
-              <option value="all">Tous</option>
-              <option value="installé">Installé</option>
-              <option value="non installé">Non installé</option>
-            </select>
-          </motion.div>
-
-          {/* Version Filter */}
-          <motion.div 
-            className="mb-6"
-            whileHover={{ x: 2 }}
-            transition={{ duration: 0.2 }}
-          >
-            <motion.label 
-              className="flex items-center space-x-3 p-3 rounded-xl hover:bg-amber-100/10 cursor-pointer group"
-              whileHover={{ x: 4 }}
-            >
-              <input
-                type="checkbox"
-                checked={filters.showAllVersions}
-                onChange={(e) => setFilters({ showAllVersions: e.target.checked })}
-                className="w-4 h-4 rounded border-2 border-amber-300 text-amber-600 focus:ring-amber-500 focus:ring-2 bg-transparent"
-              />
-              <div className="flex-1">
-                <span className="text-sm font-semibold text-primary group-hover:text-amber-600 transition-colors">
-                  Afficher toutes les versions
-                </span>
-                <p className="text-xs text-tertiary mt-1">
-                  Inclure les mods avec des versions plus anciennes mais fonctionnelles
-                </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="glass-secondary rounded-xl p-3 text-center">
+              <div className="text-xl font-bold text-green-500">
+                {Array.from(mods.values()).filter(mod => mod.status === 'installé').length}
               </div>
-            </motion.label>
-          </motion.div>
-
-          {/* Categories */}
-          <motion.div
-            whileHover={{ x: 2 }}
-            transition={{ duration: 0.2 }}
-          >
-            <label className="block text-sm font-semibold text-secondary mb-3">
-              Catégories
-            </label>
-            <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-glass">
-              {categories.map((category, index) => (
-                <motion.label 
-                  key={`category-${category}-${index}`} 
-                  className="flex items-center space-x-3 p-2 rounded-xl hover:bg-amber-100/10 cursor-pointer group"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05, duration: 0.3 }}
-                  whileHover={{ x: 4 }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={filters.categories.includes(category)}
-                    onChange={() => handleCategoryToggle(category)}
-                    className="w-4 h-4 rounded border-2 border-amber-300 text-amber-600 focus:ring-amber-500 focus:ring-2 bg-transparent"
-                  />
-                  <span className="text-sm text-primary capitalize group-hover:text-amber-600 transition-colors">
+              <div className="text-xs text-secondary">Installés</div>
+            </div>
+            <div className="glass-secondary rounded-xl p-3 text-center">
+              <div className="text-xl font-bold text-amber-500">
+                {Array.from(mods.values()).filter(mod => mod.status === 'non installé').length}
+              </div>
+              <div className="text-xs text-secondary">Disponibles</div>
+            </div>
+          </div>
+          
+          {categories.length > 0 && (
+            <div className="mt-4">
+              <div className="text-sm font-semibold text-secondary mb-2">
+                Catégories disponibles
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {categories.slice(0, 6).map(category => (
+                  <span 
+                    key={category}
+                    className="text-xs px-2 py-1 rounded-full glass text-tertiary"
+                  >
                     {category}
                   </span>
-                </motion.label>
-              ))}
+                ))}
+                {categories.length > 6 && (
+                  <span className="text-xs px-2 py-1 rounded-full text-tertiary">
+                    +{categories.length - 6}
+                  </span>
+                )}
+              </div>
             </div>
-          </motion.div>
+          )}
         </motion.div>
 
         {/* Modpacks Section */}
@@ -289,6 +222,62 @@ export default function Sidebar({ className = '' }: SidebarProps) {
                 <span>{new Date(currentModpack.modified).toLocaleDateString()}</span>
               </div>
             </motion.div>
+            
+            {/* Mods du modpack */}
+            {currentModpack.mods.length > 0 && (
+              <div className="mt-4">
+                <div className="text-sm font-semibold text-secondary mb-3">
+                  Mods inclus ({currentModpack.mods.length})
+                </div>
+                <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-glass">
+                  {currentModpack.mods.map((mod, index) => {
+                    const getStatusIcon = () => {
+                      if (mod.status === 'non installé') {
+                        return <ShieldExclamationIcon className="w-3 h-3 text-red-500" />
+                      }
+                      if ((mod as any).forceAdded) {
+                        return <ExclamationTriangleIcon className="w-3 h-3 text-yellow-500" />
+                      }
+                      return <CheckCircleIcon className="w-3 h-3 text-green-500" />
+                    }
+                    
+                    return (
+                      <motion.div
+                        key={mod.id}
+                        className="group flex items-center justify-between p-2 rounded-lg glass-secondary hover:bg-amber-100/10 transition-colors"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05, duration: 0.2 }}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            {getStatusIcon()}
+                            <div className="text-xs font-medium text-primary truncate">
+                              {mod.name}
+                            </div>
+                          </div>
+                          <div className="text-xs text-tertiary flex items-center gap-2">
+                            <span className="truncate">v{(mod as any).version || '1.0.0'}</span>
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100/20 text-amber-700">
+                              {mod.category}
+                            </span>
+                          </div>
+                        </div>
+                        <motion.button
+                          onClick={() => removeModFromCurrentModpack(mod.id)}
+                          className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 hover:bg-red-100/20 rounded transition-all"
+                          title="Retirer du modpack"
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                        >
+                          <XMarkIcon className="w-3 h-3" />
+                        </motion.button>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </div>

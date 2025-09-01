@@ -38,7 +38,7 @@ function ModListItem({ index, style, data }: ModListItemProps) {
       <ModCard
         mod={mod}
         isSelected={isSelected}
-        hasConflicts={false} // TODO: implement conflict detection
+        hasConflicts={false}
         onToggle={() => data.onToggleSelect(mod.id)}
         onViewDetails={() => {}}
       />

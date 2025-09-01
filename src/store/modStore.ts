@@ -41,6 +41,8 @@ interface ModStore {
   getFilteredMods: () => ModData[]
   getDependencies: (modId: string) => string[]
   getConflicts: () => Array<{ mod1: string, mod2: string, reason: string }>
+  addModToCurrentModpack: (mod: ModData) => void
+  removeModFromCurrentModpack: (modId: string) => void
 }
 
 const useModStore = create<ModStore>()(devtools(persist(
@@ -59,13 +61,14 @@ const useModStore = create<ModStore>()(devtools(persist(
       gameVersions: [],
       tags: [],
       text: '',
-      showAllVersions: false
+      showAllVersions: false,
+      sortBy: 'recent'
     },
     isLoading: false,
     error: null,
 
     // Actions
-    setMods: (mods) => set((state) => {
+    setMods: (mods) => set(() => {
       const modMap = new Map()
       mods.forEach(mod => modMap.set(mod.id, mod))
       return { mods: modMap }
@@ -111,12 +114,14 @@ const useModStore = create<ModStore>()(devtools(persist(
         
         // Set the current modpack
         const modpack: ModpackConfiguration = {
+          id: jsonData.id || crypto.randomUUID(),
           name: jsonData.name,
           description: jsonData.description,
           version: jsonData.version,
           gameVersion: jsonData.gameVersion,
           mods: mods,
           created: new Date(jsonData.created || Date.now()),
+          modified: new Date(),
           author: jsonData.author
         }
         
@@ -244,7 +249,17 @@ const useModStore = create<ModStore>()(devtools(persist(
       }
     },
 
-    loadModpack: (modpack) => set({ currentModpack: modpack }),
+    loadModpack: (modpack) => {
+      // Charger les données du modpack et les mods associés
+      const modMap = new Map()
+      modpack.mods.forEach(mod => modMap.set(mod.id, mod))
+      
+      set({ 
+        currentModpack: modpack,
+        mods: modMap,
+        originalModpackData: null // Reset original data when loading a different modpack
+      })
+    },
 
     exportModpack: (format) => {
       const state = get()
@@ -342,6 +357,69 @@ const useModStore = create<ModStore>()(devtools(persist(
       const state = get()
       const resolver = new DependencyResolver()
       return resolver.detectConflicts(Array.from(state.mods.values()))
+    },
+
+    addModToCurrentModpack: (mod) => {
+      const state = get()
+      if (!state.currentModpack) {
+        // Si aucun modpack n'est sélectionné, créer un modpack temporaire
+        const tempModpack: ModpackConfiguration = {
+          id: 'temp_' + crypto.randomUUID(),
+          name: 'Nouveau Modpack',
+          description: 'Modpack créé automatiquement',
+          version: '1.0.0',
+          author: 'Local User',
+          mods: [mod],
+          gameVersion: '1.21.0',
+          created: new Date(),
+          modified: new Date()
+        }
+        
+        set({
+          currentModpack: tempModpack,
+          modpacks: [...state.modpacks, tempModpack]
+        })
+      } else {
+        // Ajouter le mod au modpack existant s'il n'y est pas déjà
+        const existingMod = state.currentModpack.mods.find(m => m.id === mod.id)
+        if (!existingMod) {
+          const updatedModpack = {
+            ...state.currentModpack,
+            mods: [...state.currentModpack.mods, mod],
+            modified: new Date()
+          }
+          
+          set({
+            currentModpack: updatedModpack,
+            modpacks: state.modpacks.map(mp => 
+              mp.id === updatedModpack.id ? updatedModpack : mp
+            )
+          })
+        }
+      }
+      
+      // Ajouter le mod à la collection globale aussi
+      const newMods = new Map(state.mods)
+      newMods.set(mod.id, mod)
+      set({ mods: newMods })
+    },
+
+    removeModFromCurrentModpack: (modId) => {
+      const state = get()
+      if (!state.currentModpack) return
+      
+      const updatedModpack = {
+        ...state.currentModpack,
+        mods: state.currentModpack.mods.filter(mod => mod.id !== modId),
+        modified: new Date()
+      }
+      
+      set({
+        currentModpack: updatedModpack,
+        modpacks: state.modpacks.map(mp => 
+          mp.id === updatedModpack.id ? updatedModpack : mp
+        )
+      })
     }
   }),
   {

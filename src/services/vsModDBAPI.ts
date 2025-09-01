@@ -85,12 +85,16 @@ export interface ModPackEntry {
   filename: string
   side: string
   dependencies?: string[]
+  gameVersions: string[] // Versions de jeu compatibles
+  releaseId?: number // ID de la release spécifique
+  forceAdded?: boolean // Ajouté malgré une incompatibilité
+  compatibilityStatus?: 'compatible' | 'partially_compatible' | 'incompatible' | 'unknown'
+  compatibilityNotes?: string
 }
 
 class VSModDBAPIClient {
   private baseURL = 'https://mods.vintagestory.at/api'
   private siteURL = 'https://mods.vintagestory.at'
-  private proxyURL = '' // Will use a CORS proxy for browser requests
   private allModsCache: VSModDBMod[] | null = null
   private cacheTimestamp: number = 0
   private cacheExpiry: number = 5 * 60 * 1000 // 5 minutes
@@ -101,7 +105,7 @@ class VSModDBAPIClient {
     // Check if we're in a browser environment
     if (typeof window !== 'undefined') {
       // Try multiple CORS proxy services for better reliability
-      this.proxyURL = '' // Start without proxy, fallback if needed
+      // Start without proxy, fallback if needed
     }
   }
 
@@ -109,7 +113,7 @@ class VSModDBAPIClient {
    * Transform relative image URLs to absolute URLs 
    * For now, return null to use fallback images due to CORS issues
    */
-  private transformImageUrl(url: string | null): string | null {
+  private transformImageUrl(_url: string | null): string | null {
     // Temporarily disable external images due to CORS issues
     // This will make LazyImage use fallback/placeholder instead
     return null
@@ -138,7 +142,6 @@ class VSModDBAPIClient {
       // Use Vite proxy in development
       try {
         const url = `/api/vsmoddb${endpoint}`
-        console.log(`🔄 Making request via Vite proxy: ${endpoint}`)
         
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), timeout)
@@ -158,10 +161,9 @@ class VSModDBAPIClient {
         }
 
         const data = await response.json()
-        console.log(`✅ Successfully fetched data via Vite proxy`)
         return data
       } catch (error) {
-        console.warn(`❌ Vite proxy failed, falling back to CORS proxy:`, error.message)
+        console.warn(`❌ Vite proxy failed, falling back to CORS proxy:`, (error as Error).message)
       }
     }
     
@@ -176,7 +178,6 @@ class VSModDBAPIClient {
     for (const proxy of proxies) {
       try {
         const url = `${proxy}${encodeURIComponent(this.baseURL + endpoint)}`
-        console.log(`🔄 Trying ${proxy.split('/')[2]} proxy...`)
         
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), timeout / proxies.length) // Timeout plus court par proxy
@@ -197,12 +198,11 @@ class VSModDBAPIClient {
         }
 
         const data = await response.json()
-        console.log(`✅ Successfully fetched data via ${proxy.split('/')[2]}`)
         return data
       } catch (error) {
-        console.warn(`❌ Failed with ${proxy.split('/')[2]} proxy:`, error.message)
+        console.warn(`❌ Failed with ${proxy.split('/')[2]} proxy:`, (error as Error).message)
         if (proxy === proxies[proxies.length - 1]) {
-          throw new Error(`All proxy attempts failed. Last error: ${error.message}`)
+          throw new Error(`All proxy attempts failed. Last error: ${(error as Error).message}`)
         }
         // Continue to next proxy
       }
@@ -219,12 +219,10 @@ class VSModDBAPIClient {
     
     // Return cached data if still valid
     if (this.allModsCache && (now - this.cacheTimestamp) < this.cacheExpiry) {
-      console.log(`📋 Using cached data (${this.allModsCache.length} mods)`)
       return this.allModsCache
     }
     
     try {
-      console.log('🔍 API Request: /mods (fetching all mods for client-side pagination)')
       const response = await this.makeRequest<VSModDBModsResponse>('/mods')
       
       if (response.statuscode === '200' && response.mods) {
@@ -237,7 +235,6 @@ class VSModDBAPIClient {
         this.allModsCache = transformedMods
         this.cacheTimestamp = now
         
-        console.log(`✅ Fetched and cached ${transformedMods.length} mods from API`)
         return transformedMods
       }
       
@@ -258,8 +255,6 @@ class VSModDBAPIClient {
     // Apply client-side pagination
     const paginatedMods = allMods.slice(offset, offset + limit)
     
-    console.log(`📊 Client-side pagination: offset=${offset}, limit=${limit}`)
-    console.log(`✅ Returning ${paginatedMods.length} mods (page ${Math.floor(offset/limit) + 1})`)
     
     return paginatedMods
   }
@@ -283,12 +278,10 @@ class VSModDBAPIClient {
     const cacheTime = this.detailsCacheTimestamps.get(modid)
     
     if (cachedDetails && cacheTime && (now - cacheTime) < this.cacheExpiry) {
-      console.log(`📋 Using cached details for mod ${modid}`)
       return cachedDetails
     }
     
     try {
-      console.log(`🔍 Fetching details for mod ${modid}`)
       const response = await this.makeRequest<VSModDBModDetailResponse>(`/mod/${modid}`)
       
       if (response.statuscode === '200') {
@@ -301,7 +294,6 @@ class VSModDBAPIClient {
         this.modDetailsCache.set(modid, details)
         this.detailsCacheTimestamps.set(modid, now)
         
-        console.log(`✅ Cached details for mod ${modid}`)
         return details
       }
       return null
@@ -404,6 +396,58 @@ class VSModDBAPIClient {
   }
 
   /**
+   * Get all releases for a mod with compatibility analysis
+   */
+  getReleasesWithCompatibility(mod: VSModDBDetailedMod, targetGameVersion: string) {
+    const sortedReleases = [...mod.releases].sort((a, b) => 
+      new Date(b.created).getTime() - new Date(a.created).getTime()
+    )
+
+    return sortedReleases.map(release => {
+      const isExactMatch = release.tags.includes(targetGameVersion)
+      const majorVersion = targetGameVersion.split('.')[0]
+      const hasPartialCompatibility = release.tags.some(tag => 
+        tag.startsWith(majorVersion)
+      )
+      
+      let compatibility: 'compatible' | 'partially_compatible' | 'incompatible' = 'incompatible'
+      if (isExactMatch) {
+        compatibility = 'compatible'
+      } else if (hasPartialCompatibility) {
+        compatibility = 'partially_compatible'
+      }
+
+      return {
+        ...release,
+        compatibility,
+        isRecommended: isExactMatch && release === sortedReleases[0]
+      }
+    })
+  }
+
+  /**
+   * Get best release for a game version (exact match preferred, then latest)
+   */
+  getBestRelease(mod: VSModDBDetailedMod, gameVersion: string, allowIncompatible = false): VSModDBRelease | null {
+    const releasesWithCompat = this.getReleasesWithCompatibility(mod, gameVersion)
+    
+    // First, try exact compatibility
+    const compatible = releasesWithCompat.filter(r => r.compatibility === 'compatible')
+    if (compatible.length > 0) return compatible[0]
+    
+    // Then, try partial compatibility
+    const partiallyCompatible = releasesWithCompat.filter(r => r.compatibility === 'partially_compatible')
+    if (partiallyCompatible.length > 0) return partiallyCompatible[0]
+    
+    // Finally, return latest if allowing incompatible
+    if (allowIncompatible && releasesWithCompat.length > 0) {
+      return releasesWithCompat[0]
+    }
+    
+    return null
+  }
+
+  /**
    * Create a modpack from selected mods
    */
   async createModPack(
@@ -430,9 +474,10 @@ class VSModDBAPIClient {
             }
           }
           
-          console.log(`📦 Adding mod to pack: ${modDetails.name} v${latestRelease.modversion}`)
-          console.log(`🔗 Download URL: ${downloadUrl}`)
           
+          const releaseWithCompat = this.getReleasesWithCompatibility(modDetails, gameVersion)
+          const selectedRelease = releaseWithCompat.find(r => r.releaseid === latestRelease.releaseid)
+
           modPackEntries.push({
             modid: modDetails.modid,
             modidstr: latestRelease.modidstr,
@@ -441,7 +486,11 @@ class VSModDBAPIClient {
             downloadUrl: downloadUrl,
             filename: latestRelease.filename,
             side: modDetails.side,
-            dependencies: [] // Would need to parse from mod text/description
+            dependencies: [], // Would need to parse from mod text/description
+            gameVersions: latestRelease.tags,
+            releaseId: latestRelease.releaseid,
+            forceAdded: selectedRelease ? selectedRelease.compatibility === 'incompatible' : false,
+            compatibilityStatus: selectedRelease?.compatibility || 'unknown'
           })
         }
       }
@@ -483,7 +532,6 @@ class VSModDBAPIClient {
    */
   async downloadMod(mod: ModPackEntry): Promise<Blob> {
     try {
-      console.log(`🔄 Downloading mod file: ${mod.name} (${mod.filename})`)
       
       // For downloads, we'll use CORS proxies directly since file downloads
       // require different handling than API calls
@@ -499,7 +547,6 @@ class VSModDBAPIClient {
       for (const proxy of proxies) {
         try {
           const url = `${proxy}${encodeURIComponent(mod.downloadUrl)}`
-          console.log(`🔄 Trying ${proxy.split('/')[2]} for download: ${mod.name}`)
           
           const controller = new AbortController()
           const timeoutId = setTimeout(() => controller.abort(), 30000) // 30s timeout for downloads
@@ -515,12 +562,11 @@ class VSModDBAPIClient {
             throw new Error(`Download failed: ${response.status}`)
           }
 
-          console.log(`✅ Downloaded ${mod.name} via ${proxy.split('/')[2]}`)
           return await response.blob()
         } catch (error) {
-          console.warn(`❌ Failed to download ${mod.name} with ${proxy.split('/')[2]}:`, error.message)
+          console.warn(`❌ Failed to download ${mod.name} with ${proxy.split('/')[2]}:`, (error as Error).message)
           if (proxy === proxies[proxies.length - 1]) {
-            throw new Error(`All download attempts failed for ${mod.name}. Last error: ${error.message}`)
+            throw new Error(`All download attempts failed for ${mod.name}. Last error: ${(error as Error).message}`)
           }
         }
       }
@@ -540,11 +586,8 @@ class VSModDBAPIClient {
     const total = modPack.mods.length
     let current = 0
 
-    console.log(`🚀 Starting download of ${total} mods...`)
-
     for (const mod of modPack.mods) {
       try {
-        console.log(`⏳ Downloading ${current + 1}/${total}: ${mod.name}`)
         
         if (!mod.downloadUrl) {
           throw new Error('No download URL available')
@@ -554,7 +597,6 @@ class VSModDBAPIClient {
         downloads.set(mod.filename, blob)
         current++
         
-        console.log(`✅ Downloaded ${current}/${total}: ${mod.name} (${blob.size} bytes)`)
         
         if (onProgress) {
           onProgress(current, total)
@@ -569,7 +611,6 @@ class VSModDBAPIClient {
       }
     }
 
-    console.log(`🎯 Download complete: ${downloads.size}/${total} mods successfully downloaded`)
     return downloads
   }
 

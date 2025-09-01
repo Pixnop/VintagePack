@@ -55,6 +55,9 @@ export interface SearchFilters {
   tags: string[];
   text: string;
   showAllVersions: boolean;
+  showPartiallyCompatible?: boolean;
+  showIncompatible?: boolean;
+  sortBy?: 'recent' | 'downloads' | 'trending' | 'name';
 }
 
 export interface DependencyNode {

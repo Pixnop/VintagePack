@@ -131,8 +131,22 @@
     @apply w-full px-4 py-3 rounded-xl transition-all duration-300 outline-none;
     background: var(--bg-glass);
     border: 1px solid var(--border-primary);
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
     backdrop-filter: blur(10px);
+  }
+  
+  /* Force text visibility in all input states */
+  .input-glass,
+  .input-glass:focus,
+  .input-glass:active,
+  .input-glass:hover {
+    color: var(--text-primary) !important;
+  }
+  
+  /* Ensure select elements also have visible text */
+  .input-glass option {
+    color: var(--text-primary) !important;
+    background: var(--bg-primary) !important;
   }
   
   .input-glass:focus {

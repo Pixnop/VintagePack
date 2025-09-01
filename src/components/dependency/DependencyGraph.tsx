@@ -143,7 +143,7 @@ export default function DependencyGraph({ className = '' }: DependencyGraphProps
   }, [initialNodes, initialEdges, setNodes, setEdges])
 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
-    console.log('Node clicked:', node.data.mod.name)
+    // Node clicked: node.data.mod.name
   }, [])
 
   if (mods.size === 0) {

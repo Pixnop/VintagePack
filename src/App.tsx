@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/outline'
 import Header from './components/layout/Header'
 import Sidebar from './components/layout/Sidebar'
+import UnifiedFilters from './components/filters/UnifiedFilters'
 import ModList from './components/mod/ModList'
 import ModBrowser from './components/vsmoddb/ModBrowser'
 import CommandPalette from './components/ui/CommandPalette'
@@ -36,19 +37,19 @@ function App() {
   const [view, setView] = useState<'local' | 'vsmoddb'>('vsmoddb')
   const [fabOpen, setFabOpen] = useState(false)
   
-  // Auto-switch to Local tab when a modpack is imported
+  // Handle navigation events from CommandPalette
   useEffect(() => {
-    if (currentModpack && mods.size > 0 && view === 'vsmoddb') {
-      setView('local')
+    const handleNavigation = (event: CustomEvent) => {
+      const targetView = event.detail as 'local' | 'vsmoddb'
+      setView(targetView)
     }
-  }, [currentModpack, mods.size, view])
 
-  // Removed automatic sample data loading - user wants to start clean
-  // useEffect(() => {
-  //   if (mods.size === 0) {
-  //     loadSampleData()
-  //   }
-  // }, [loadSampleData, mods.size])
+    window.addEventListener('navigate-to-view', handleNavigation as EventListener)
+    return () => {
+      window.removeEventListener('navigate-to-view', handleNavigation as EventListener)
+    }
+  }, [])
+
 
   // Floating Action Button actions
   const fabActions = [
@@ -183,7 +184,7 @@ function App() {
 
   return (
     <motion.div 
-      className="min-h-screen"
+      className="min-h-screen flex flex-col"
       style={{ 
         background: resolvedTheme === 'dark' 
           ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
@@ -196,7 +197,7 @@ function App() {
       <Header />
       
       <motion.div 
-        className={`h-screen transition-all duration-300 ${currentModpack ? 'pt-28' : 'pt-20'}`}
+        className="flex-1 transition-all duration-300"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.6 }}
@@ -231,95 +232,75 @@ function App() {
           <Panel defaultSize={75} minSize={50} className="min-w-0">
             <main className="h-full overflow-hidden">
               <div className="h-full flex flex-col">
+                {/* Header avec titre et onglets */}
                 <motion.div 
-                  className="flex-shrink-0 glass-secondary border-b border-amber-200/20 px-6 py-6 mx-6 mt-6 rounded-2xl"
+                  className="flex-shrink-0 glass-secondary px-6 py-4 mx-6 mt-6 rounded-2xl"
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.4, duration: 0.4 }}
                 >
                   <div className="flex items-center justify-between">
-                    <motion.div
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.5, duration: 0.4 }}
-                    >
-                      <h1 className="text-2xl font-bold text-primary bg-gradient-to-r from-amber-600 to-amber-800 bg-clip-text text-transparent">
-                        {view === 'local' ? 'Collection Locale' : 'Explore VSModDB'}
-                      </h1>
-                      <p className="mt-2 text-secondary">
-                        {view === 'local' ? (
-                          <>
-                            <span className="font-semibold text-amber-600">{mods.size}</span> mods disponibles
-                            {currentModpack && (
-                              <span className="ml-2 text-tertiary">
-                                • ModPack: <span className="font-medium text-primary">{currentModpack.name}</span> ({currentModpack.mods.length} mods)
-                              </span>
-                            )}
-                          </>
-                        ) : (
-                          'Découvrir et télécharger les derniers mods'
-                        )}
-                      </p>
-                    </motion.div>
-                    
-                    <motion.div 
-                      className="flex items-center space-x-6"
-                      initial={{ x: 20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.6, duration: 0.4 }}
-                    >
-                      <div className="flex glass rounded-2xl p-1">
-                        {(['vsmoddb', 'local'] as const).map((tab) => (
-                          <motion.button
-                            key={tab}
-                            data-view={tab}
-                            onClick={() => setView(tab)}
-                            className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all relative ${
-                              view === tab 
-                                ? 'text-white shadow-lg' 
-                                : 'text-secondary hover:text-primary'
-                            }`}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            {view === tab && (
-                              <motion.div
-                                className="absolute inset-0 rounded-xl"
-                                style={{ background: 'var(--gradient-brand)' }}
-                                layoutId="activeTab"
-                                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                              />
-                            )}
-                            <span className="relative z-10">
-                              {tab === 'vsmoddb' ? 'VSModDB' : 'Local'}
-                            </span>
-                          </motion.button>
-                        ))}
-                      </div>
-                      
-                      {view === 'local' && (
-                        <motion.div 
-                          className="flex items-center space-x-6 text-sm"
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.7, duration: 0.3 }}
+                    <div className="flex glass rounded-2xl p-1">
+                      {(['vsmoddb', 'local'] as const).map((tab) => (
+                        <motion.button
+                          key={tab}
+                          data-view={tab}
+                          onClick={() => setView(tab)}
+                          className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all relative ${
+                            view === tab 
+                              ? 'text-white shadow-lg' 
+                              : 'text-secondary hover:text-primary'
+                          }`}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                         >
-                          <div className="text-center glass-secondary rounded-xl px-4 py-2">
-                            <div className="text-xl font-bold text-green-500">
-                              {Array.from(mods.values()).filter(mod => mod.status === 'installé').length}
-                            </div>
-                            <div className="text-xs text-secondary">Installés</div>
+                          {view === tab && (
+                            <motion.div
+                              className="absolute inset-0 rounded-xl"
+                              style={{ background: 'var(--gradient-brand)' }}
+                              layoutId="activeTab"
+                              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                            />
+                          )}
+                          <span className="relative z-10">
+                            {tab === 'vsmoddb' ? 'VSModDB' : 'Local'}
+                          </span>
+                        </motion.button>
+                      ))}
+                    </div>
+                    
+                    {view === 'local' && (
+                      <motion.div 
+                        className="flex items-center space-x-6 text-sm"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.7, duration: 0.3 }}
+                      >
+                        <div className="text-center glass-secondary rounded-xl px-4 py-2">
+                          <div className="text-xl font-bold text-green-500">
+                            {Array.from(mods.values()).filter(mod => mod.status === 'installé').length}
                           </div>
-                          <div className="text-center glass-secondary rounded-xl px-4 py-2">
-                            <div className="text-xl font-bold text-amber-500">
-                              {Array.from(mods.values()).filter(mod => mod.status === 'non installé').length}
-                            </div>
-                            <div className="text-xs text-secondary">Disponibles</div>
+                          <div className="text-xs text-secondary">Installés</div>
+                        </div>
+                        <div className="text-center glass-secondary rounded-xl px-4 py-2">
+                          <div className="text-xl font-bold text-amber-500">
+                            {Array.from(mods.values()).filter(mod => mod.status === 'non installé').length}
                           </div>
-                        </motion.div>
-                      )}
-                    </motion.div>
+                          <div className="text-xs text-secondary">Disponibles</div>
+                        </div>
+                      </motion.div>
+                    )}
                   </div>
+                </motion.div>
+                
+                {/* Filtres unifiés */}
+                <motion.div
+                  className="px-6 pb-2"
+                  initial={{ y: -10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.5, duration: 0.4 }}
+                >
+                  <UnifiedFilters view={view} />
                 </motion.div>
                 
                 <motion.div 

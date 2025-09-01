@@ -6,7 +6,9 @@ import {
   FolderOpenIcon,
   ArrowDownTrayIcon,
   CommandLineIcon,
-  ArchiveBoxIcon
+  ArchiveBoxIcon,
+  PlayIcon,
+  CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import useModStore from '../../store/modStore'
 import ThemeToggle from '../ui/ThemeToggle'
@@ -53,11 +55,8 @@ function Header() {
   }
 
   const handleDownloadModpack = async () => {
-    console.log('🔵 Download button clicked!')
-    console.log('🔍 currentModpack:', currentModpack)
     
     if (!currentModpack) {
-      console.log('❌ Missing required data for download')
       alert('Erreur: Données de modpack manquantes. Essayez de réimporter le modpack.')
       return
     }
@@ -67,16 +66,14 @@ function Header() {
       const api = new VSModDBAPIClient()
       
       // Use the currentModpack data which already has the correct structure
-      console.log('🔍 Using currentModpack data for download:', currentModpack.name)
       const modpackData = {
         name: currentModpack.name,
         description: currentModpack.description || '',
         version: currentModpack.version,
         gameVersion: currentModpack.gameVersion,
         author: currentModpack.author || 'VintagePack User',
-        created: currentModpack.created || new Date().toISOString(),
+        created: typeof currentModpack.created === 'string' ? currentModpack.created : currentModpack.created.toISOString(),
         mods: currentModpack.mods.map((mod: any) => {
-          console.log(`🔍 Processing mod for download: ${mod.name}, URL: ${mod.downloadUrl}`)
           return {
             modid: mod.modid,
             modidstr: mod.modidstr,
@@ -85,13 +82,12 @@ function Header() {
             downloadUrl: mod.downloadUrl,
             filename: mod.filename,
             side: mod.side,
-            dependencies: mod.dependencies || []
+            dependencies: mod.dependencies || [],
+            gameVersions: mod.gameVersions || [currentModpack.gameVersion]
           }
         })
       }
       
-      console.log('🎯 Creating ZIP for imported modpack:', modpackData.name)
-      console.log('📋 Modpack data for ZIP creation:', JSON.stringify(modpackData, null, 2))
       const zipBlob = await api.createModPackZip(modpackData)
       
       // Download the ZIP file
@@ -102,7 +98,6 @@ function Header() {
       a.click()
       URL.revokeObjectURL(url)
       
-      console.log('✅ Modpack ZIP download completed')
     } catch (error) {
       console.error('❌ Failed to download modpack:', error)
       alert('Erreur lors du téléchargement du modpack. Vérifiez la console pour plus de détails.')
@@ -113,8 +108,8 @@ function Header() {
 
   return (
     <motion.header 
-      className="fixed top-0 left-0 right-0 z-50 glass backdrop-blur-xl"
-      initial={{ y: -100, opacity: 0 }}
+      className="relative w-full glass backdrop-blur-xl"
+      initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
     >
@@ -144,54 +139,18 @@ function Header() {
             </div>
           </motion.div>
 
-          {/* Center - Search */}
+          {/* Center - Title */}
           <motion.div 
-            className="flex-1 max-w-2xl mx-8"
+            className="flex-1 text-center"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.4 }}
           >
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                <MagnifyingGlassIcon className="h-5 w-5 text-tertiary group-focus-within:text-amber-600 transition-colors" />
-              </div>
-              <motion.input
-                type="text"
-                className="input-glass w-full pl-12 pr-12 py-3 text-sm placeholder:text-tertiary"
-                placeholder="Rechercher des mods... (Ctrl+K pour ouvrir la palette)"
-                value={searchQuery}
-                onChange={(e) => searchMods(e.target.value)}
-                whileFocus={{ scale: 1.02 }}
-                transition={{ duration: 0.2 }}
-              />
-              {searchQuery && (
-                <motion.div 
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                >
-                  <motion.button
-                    className="text-tertiary hover:text-primary text-xl transition-colors p-1 rounded-lg hover:bg-amber-100/20"
-                    onClick={() => searchMods('')}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    ×
-                  </motion.button>
-                </motion.div>
-              )}
-              <motion.div
-                className="absolute inset-y-0 right-0 pr-4 flex items-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: searchQuery ? 0 : 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="flex items-center space-x-1 text-xs text-tertiary bg-amber-100/20 px-2 py-1 rounded-md">
-                  <CommandLineIcon className="w-3 h-3" />
-                  <span>Ctrl+K</span>
-                </div>
-              </motion.div>
+            <div className="text-sm text-tertiary">
+              Gestionnaire moderne de mods Vintage Story
+            </div>
+            <div className="text-xs text-tertiary mt-1">
+              Ctrl+K pour ouvrir la palette de commandes
             </div>
           </motion.div>
 
@@ -265,28 +224,71 @@ function Header() {
         {/* Current modpack info */}
         {currentModpack && (
           <motion.div 
-            className="mt-2 glass-secondary rounded-xl p-2"
+            className="mt-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-300/30 rounded-xl p-3 relative overflow-hidden"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ delay: 0.4, duration: 0.3 }}
           >
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center space-x-2">
+            {/* Background glow effect */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-amber-400/5 to-transparent"
+              animate={{ x: ['-100%', '100%'] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+            />
+            
+            <div className="flex items-center justify-between text-xs relative z-10">
+              <div className="flex items-center space-x-3">
                 <motion.div
-                  whileHover={{ rotate: 180 }}
-                  transition={{ duration: 0.3 }}
+                  className="flex items-center space-x-2"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  <ShareIcon className="h-3 w-3 text-amber-500" />
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <PlayIcon className="h-4 w-4 text-amber-500 fill-amber-500" />
+                  </motion.div>
+                  <div className="flex items-center space-x-1">
+                    <CheckCircleIcon className="h-3 w-3 text-green-500" />
+                    <span className="text-xs font-medium text-green-600">ACTIF</span>
+                  </div>
                 </motion.div>
+                
+                <div className="h-4 w-px bg-amber-300/40" />
+                
                 <span className="text-secondary">
                   <span className="font-semibold text-primary">{currentModpack.name}</span>
-                  <span className="text-tertiary ml-1">• {currentModpack.mods.length} mods</span>
+                  <span className="text-tertiary ml-2">• {currentModpack.mods.length} mods</span>
+                  <span className="text-tertiary ml-2">• v{currentModpack.version}</span>
                 </span>
               </div>
-              <div className="text-xs text-tertiary">
-                VS {currentModpack.gameVersion}
+              
+              <div className="flex items-center space-x-3">
+                <div className="text-xs text-tertiary">
+                  VS {currentModpack.gameVersion}
+                </div>
+                <motion.div
+                  className="w-2 h-2 bg-green-500 rounded-full"
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
               </div>
+            </div>
+          </motion.div>
+        )}
+        
+        {/* No modpack selected indicator */}
+        {!currentModpack && (
+          <motion.div 
+            className="mt-2 bg-gradient-to-r from-gray-500/5 to-gray-600/5 border border-gray-300/20 rounded-xl p-2"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+          >
+            <div className="flex items-center justify-center text-xs text-tertiary">
+              <span>Aucun modpack sélectionné • Créez ou sélectionnez un modpack pour commencer</span>
             </div>
           </motion.div>
         )}

@@ -34,7 +34,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const { toggleTheme, theme } = useTheme()
-  const { searchMods, exportModpack, currentModpack } = useModStore()
+  const { currentModpack } = useModStore()
 
   const commands: Command[] = [
     {
@@ -239,7 +239,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
                         <div className="px-6 py-2 text-xs font-semibold text-tertiary uppercase tracking-wider">
                           {categoryLabels[category as keyof typeof categoryLabels]}
                         </div>
-                        {categoryCommands.map((command, index) => {
+                        {categoryCommands.map((command) => {
                           const globalIndex = filteredCommands.indexOf(command)
                           const isSelected = globalIndex === selectedIndex
                           
