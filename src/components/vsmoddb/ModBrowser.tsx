@@ -19,7 +19,7 @@ interface ModBrowserProps {
 }
 
 export default function ModBrowser({ onCreateModPack }: ModBrowserProps) {
-  const { filters, searchQuery, currentModpack, addModToCurrentModpack, removeModFromCurrentModpack } = useModStore()
+  const { filters, searchQuery, currentModpack, addModToCurrentModpack, removeModFromCurrentModpack, setError } = useModStore()
   
   const [allMods, setAllMods] = useState<VSModDBMod[]>([])
   const [selectedMods, setSelectedMods] = useState<Map<number, VSModDBDetailedMod>>(new Map())
@@ -60,8 +60,11 @@ export default function ModBrowser({ onCreateModPack }: ModBrowserProps) {
       const totalCount = await vsModDB.getTotalModsCount()
       const allModsList = await vsModDB.getMods(totalCount, 0)
       setAllMods(allModsList)
+      setTotalMods(totalCount)
     } catch (error) {
       console.error('Failed to load mods:', error)
+      // Propager l'erreur au store global pour afficher la page CORS
+      setError(`Impossible d'accéder à VSModDB. ${error instanceof Error ? error.message : 'Erreur CORS détectée.'}`)
     } finally {
       setLoading(false)
     }

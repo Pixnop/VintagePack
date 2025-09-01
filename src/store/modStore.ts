@@ -44,6 +44,7 @@ interface ModStore {
   addModToCurrentModpack: (mod: ModData) => void
   removeModFromCurrentModpack: (modId: string) => void
   clearError: () => void
+  setError: (error: string) => void
 }
 
 const useModStore = create<ModStore>()(devtools(persist(
@@ -425,6 +426,10 @@ const useModStore = create<ModStore>()(devtools(persist(
 
     clearError: () => {
       set({ error: null })
+    },
+
+    setError: (error: string) => {
+      set({ error })
     }
   }),
   {
