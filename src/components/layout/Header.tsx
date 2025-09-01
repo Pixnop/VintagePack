@@ -1,11 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
-  MagnifyingGlassIcon,
-  ShareIcon,
   FolderOpenIcon,
   ArrowDownTrayIcon,
-  CommandLineIcon,
   ArchiveBoxIcon,
   PlayIcon,
   CheckCircleIcon
@@ -16,8 +13,6 @@ import VSModDBAPIClient from '../../services/vsModDBAPI'
 
 function Header() {
   const {
-    searchQuery,
-    searchMods,
     selectedMods,
     currentModpack,
     exportModpack,

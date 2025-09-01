@@ -15,10 +15,10 @@ import { useTheme } from '../../hooks/useTheme'
 
 interface UnifiedFiltersProps {
   view: 'local' | 'vsmoddb'
-  onFiltersChange?: () => void
+  // onFiltersChange?: () => void  // Pas utilisé pour l'instant
 }
 
-export default function UnifiedFilters({ view, onFiltersChange }: UnifiedFiltersProps) {
+export default function UnifiedFilters({ view }: UnifiedFiltersProps) {
   const { filters, setFilters, searchQuery, searchMods } = useModStore()
   const { resolvedTheme } = useTheme()
   const [isExpanded, setIsExpanded] = useState(false)
@@ -90,11 +90,13 @@ export default function UnifiedFilters({ view, onFiltersChange }: UnifiedFilters
             type="text"
             value={searchQuery}
             onChange={(e) => {
-              console.log('Texte tapé:', e.target.value)
-              searchMods(e.target.value)
+              const target = e.target as HTMLInputElement
+              console.log('Texte tapé:', target.value)
+              searchMods(target.value)
             }}
             onInput={(e) => {
-              console.log('Input event:', e.target.value)
+              const target = e.target as HTMLInputElement
+              console.log('Input event:', target.value)
             }}
             placeholder="Rechercher des mods..."
             className="w-full pl-10 pr-10 px-4 py-3 rounded-xl outline-none"

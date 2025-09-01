@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   XMarkIcon,
@@ -213,7 +213,7 @@ export default function ModDetailsModal({
                                       .replace(/<h3[^>]*>/g, '<h3 style="font-size: 1rem; font-weight: 600; color: #1f2937; margin: 0.75rem 0;">')
                                       .replace(/<p[^>]*>/g, '<p style="margin: 0.5rem 0; line-height: 1.5;">')
                                       .replace(/<strong[^>]*>/g, '<strong style="font-weight: 600;">')
-                                      .replace(/<span[^>]*color:[^;]*;[^>]*>/g, (match) => {
+                                      .replace(/<span[^>]*color:[^;]*;[^>]*>/g, (_match) => {
                                         // Simplify color spans to avoid complex styling
                                         return '<span style="font-weight: 500;">'
                                       })

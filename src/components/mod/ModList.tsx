@@ -31,7 +31,7 @@ interface ModListItemProps {
 function ModListItem({ index, style, data }: ModListItemProps) {
   const mod = data.mods[index]
   const isSelected = data.selectedMods.has(mod.id)
-  const isInModpack = data.currentModpack?.mods.some((modEntry: ModData) => modEntry.id === mod.id)
+  // const isInModpack = data.currentModpack?.mods.some((modEntry: ModData) => modEntry.id === mod.id)
   
   return (
     <div style={style} className="px-4 py-2">
@@ -222,6 +222,7 @@ export default function ModList({ className = '' }: ModListProps) {
         ) : (
           <List
             height={600} // This will be dynamically set by parent container
+            width="100%"
             itemCount={filteredMods.length}
             itemSize={viewMode === 'grid' ? 200 : 120}
             itemData={listData}

@@ -17,6 +17,7 @@
     "framer-motion": "^12.23.12",
     "fuse.js": "^7.0.0",
     "jszip": "^3.10.1",
+    "lucide-react": "^0.292.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-resizable-panels": "^3.0.5",
@@ -45,6 +46,7 @@
     "eslint-plugin-react-refresh": "^0.4.4",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.5",
+    "terser": "^5.43.1",
     "typescript": "^5.2.2",
     "vite": "^4.5.0",
     "vitest": "^0.34.6"

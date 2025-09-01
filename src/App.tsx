@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { 
   FolderOpenIcon,
   ArrowDownTrayIcon,
   CommandLineIcon,
-  CogIcon,
   PlusIcon
 } from '@heroicons/react/24/outline'
 import Header from './components/layout/Header'
@@ -23,8 +22,6 @@ import { useToast } from './hooks/useToast'
 
 function App() {
   const { 
-    loadModsFromTSV, 
-    loadSampleData,
     isLoading, 
     error: storeError, 
     mods,

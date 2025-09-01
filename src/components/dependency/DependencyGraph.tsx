@@ -6,14 +6,12 @@ import ReactFlow, {
   Background,
   ConnectionMode,
   NodeTypes,
-  EdgeTypes,
   MarkerType,
   useNodesState,
   useEdgesState,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import useModStore from '../../store/modStore'
-import { ModData } from '../../types/mod'
 
 interface DependencyGraphProps {
   className?: string
@@ -142,7 +140,7 @@ export default function DependencyGraph({ className = '' }: DependencyGraphProps
     setEdges(initialEdges)
   }, [initialNodes, initialEdges, setNodes, setEdges])
 
-  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+  const onNodeClick = useCallback((_event: React.MouseEvent, _node: Node) => {
     // Node clicked: node.data.mod.name
   }, [])
 

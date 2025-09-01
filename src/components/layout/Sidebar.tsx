@@ -1,4 +1,3 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 import { FunnelIcon, Squares2X2Icon, ListBulletIcon, PlusIcon, XMarkIcon, ExclamationTriangleIcon, ShieldExclamationIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import useModStore from '../../store/modStore'
@@ -9,8 +8,6 @@ interface SidebarProps {
 
 export default function Sidebar({ className = '' }: SidebarProps) {
   const {
-    filters,
-    setFilters,
     modpacks,
     currentModpack,
     loadModpack,
@@ -23,13 +20,14 @@ export default function Sidebar({ className = '' }: SidebarProps) {
     Array.from(mods.values()).map(mod => mod.category)
   )).sort()
 
-  const handleCategoryToggle = (category: string) => {
-    const newCategories = filters.categories.includes(category)
-      ? filters.categories.filter(c => c !== category)
-      : [...filters.categories, category]
-    
-    setFilters({ categories: newCategories })
-  }
+  // Fonction pour gérer les catégories si nécessaire
+  // const handleCategoryToggle = (category: string) => {
+  //   const newCategories = filters.categories.includes(category)
+  //     ? filters.categories.filter(c => c !== category)
+  //     : [...filters.categories, category]
+  //   
+  //   setFilters({ categories: newCategories })
+  // }
 
   const handleCreateNewModpack = () => {
     const name = prompt('Nom du nouveau modpack:')

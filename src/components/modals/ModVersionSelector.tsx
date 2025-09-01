@@ -29,7 +29,7 @@ export default function ModVersionSelector({
 }: ModVersionSelectorProps) {
   const [selectedRelease, setSelectedRelease] = useState<VSModDBRelease | null>(null)
   const [forceAdd, setForceAdd] = useState(false)
-  const [showIncompatibleWarning, setShowIncompatibleWarning] = useState(false)
+  const [_showIncompatibleWarning, _setShowIncompatibleWarning] = useState(false)
 
   // Trier les releases par date (plus récente en premier)
   const sortedReleases = [...mod.releases].sort((a, b) => 
@@ -72,7 +72,7 @@ export default function ModVersionSelector({
     const releaseWithCompat = releasesWithCompatibility.find(r => r.releaseid === selectedRelease.releaseid)!
     
     if (releaseWithCompat.status === 'incompatible' && !forceAdd) {
-      setShowIncompatibleWarning(true)
+      // setShowIncompatibleWarning(true)  // Commented out as not used
       return
     }
 

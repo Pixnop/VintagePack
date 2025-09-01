@@ -263,7 +263,7 @@ export class DependencyResolver {
     
     Array.from(levelGroups.entries())
       .sort(([a], [b]) => a - b)
-      .forEach(([level, levelNodes], levelIndex) => {
+      .forEach(([_level, levelNodes], levelIndex) => {
         const totalHeight = levelNodes.length * nodeHeight;
         const startY = -totalHeight / 2;
         
